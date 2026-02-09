@@ -1,12 +1,8 @@
 import { createAction, Property } from '@activepieces/pieces-framework';
 import { microsoft365CopilotAuth } from '../common/auth';
 import { Client } from '@microsoft/microsoft-graph-client';
-import {
-  CopilotConversation,
-  CopilotConversationLocation,
-  CopilotContextMessage,
-  CopilotContextualResources,
-} from '@microsoft/microsoft-graph-types';
+
+import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 
 export const chatWithCopilot = createAction({
   auth: microsoft365CopilotAuth,
@@ -68,21 +64,28 @@ export const chatWithCopilot = createAction({
 
     let activeConversationId = conversationId;
     if (!activeConversationId) {
-      const createResponse = await client
-        .api(`beta/copilot/conversations`)
-        .post({});
-      activeConversationId = createResponse.id;
+      const createResponse = await httpClient.sendRequest({
+         method: HttpMethod.POST,
+        url: `https://graph.microsoft.com/beta/copilot/conversations`,
+        headers: {
+          'Authorization': `Bearer ${context.auth.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: {},
+      });
+      console.log('Create conversation response', JSON.stringify(createResponse));
+      activeConversationId = createResponse.body.id;
     }
 
-    const locationHint: CopilotConversationLocation = {
+    const locationHint: any = {
       timeZone: timeZone,
     };
 
     const body: {
       message: { text: string };
-      locationHint: CopilotConversationLocation;
-      additionalContext?: CopilotContextMessage[];
-      contextualResources?: CopilotContextualResources;
+      locationHint: any;
+      additionalContext?: any[];
+      contextualResources?: any;
     } = {
       message: {
         text: messageText,
@@ -98,7 +101,7 @@ export const chatWithCopilot = createAction({
     //   body.additionalContext = additionalContext;
     // }
 
-    const contextualResources: CopilotContextualResources = {};
+    const contextualResources: any = {};
 
     // if (
     //   contextFiles &&
@@ -118,10 +121,16 @@ export const chatWithCopilot = createAction({
       body.contextualResources = contextualResources;
     }
 
-    const response: CopilotConversation = await client
-      .api(`beta/copilot/conversations/${activeConversationId}/chat`)
-      .post(body);
+    const response = await httpClient.sendRequest({
+      method: HttpMethod.POST,
+      url: `https://graph.microsoft.com/beta/copilot/conversations/${activeConversationId}/chat`,
+      headers: {
+        'Authorization': `Bearer ${context.auth.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    });
 
-    return response;
+    return response.body;
   },
 });

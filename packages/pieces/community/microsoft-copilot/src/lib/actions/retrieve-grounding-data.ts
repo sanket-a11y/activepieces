@@ -1,9 +1,6 @@
 import { createAction, Property } from '@activepieces/pieces-framework';
 import { microsoft365CopilotAuth } from '../common/auth';
 import { Client } from '@microsoft/microsoft-graph-client';
-import { 
-  CopilotRetrievalRequest,
-} from '@microsoft/microsoft-graph-types';
 
 export const retrieveGroundingData = createAction({
   auth: microsoft365CopilotAuth,
@@ -14,7 +11,8 @@ export const retrieveGroundingData = createAction({
   props: {
     queryString: Property.LongText({
       displayName: 'Query String',
-      description: 'Natural language query to retrieve relevant text extracts (max 1500 characters)',
+      description:
+        'Natural language query to retrieve relevant text extracts (max 1500 characters)',
       required: true,
     }),
     dataSource: Property.StaticDropdown({
@@ -40,12 +38,14 @@ export const retrieveGroundingData = createAction({
     }),
     filterExpression: Property.LongText({
       displayName: 'Filter Expression (optional)',
-      description: 'KQL expression to scope the retrieval (e.g., Author:"John Doe", FileExtension:"docx")',
+      description:
+        'KQL expression to scope the retrieval (e.g., Author:"John Doe", FileExtension:"docx")',
       required: false,
     }),
     resourceMetadata: Property.Json({
       displayName: 'Resource Metadata (optional)',
-      description: 'Array of metadata fields to return for each item (e.g., ["title", "author"])',
+      description:
+        'Array of metadata fields to return for each item (e.g., ["title", "author"])',
       required: false,
     }),
     maximumNumberOfResults: Property.Number({
@@ -56,7 +56,8 @@ export const retrieveGroundingData = createAction({
     }),
     connectionIds: Property.Json({
       displayName: 'Connection IDs (optional)',
-      description: 'Array of Copilot connector IDs to search (only for Copilot Connectors)',
+      description:
+        'Array of Copilot connector IDs to search (only for Copilot Connectors)',
       required: false,
     }),
   },
@@ -76,23 +77,35 @@ export const retrieveGroundingData = createAction({
       },
     });
 
-    const body: CopilotRetrievalRequest = {
+    const body: any = {
       queryString,
-      dataSource: dataSource as 'sharePoint' | 'oneDriveBusiness' | 'externalItem',
+      dataSource: dataSource,
     };
 
     if (filterExpression) {
       body.filterExpression = filterExpression;
     }
-    if (resourceMetadata && Array.isArray(resourceMetadata) && resourceMetadata.length > 0) {
+    if (
+      resourceMetadata &&
+      Array.isArray(resourceMetadata) &&
+      resourceMetadata.length > 0
+    ) {
       body.resourceMetadata = resourceMetadata;
     }
 
     if (maximumNumberOfResults) {
-      body.maximumNumberOfResults = Math.min(Math.max(maximumNumberOfResults, 1), 25);
+      body.maximumNumberOfResults = Math.min(
+        Math.max(maximumNumberOfResults, 1),
+        25
+      );
     }
 
-    if (dataSource === 'externalItem' && connectionIds && Array.isArray(connectionIds) && connectionIds.length > 0) {
+    if (
+      dataSource === 'externalItem' &&
+      connectionIds &&
+      Array.isArray(connectionIds) &&
+      connectionIds.length > 0
+    ) {
       body.dataSourceConfiguration = {
         externalItem: {
           connections: connectionIds.map((connectionId: string) => ({

@@ -4,6 +4,7 @@ import {
 } from '@activepieces/pieces-framework';
 import { microsoft365CopilotAuth } from './lib/common/auth';
 import { chatWithCopilot } from './lib/actions/chat-with-copilot';
+import { searchWithCopilot } from './lib/actions/search-with-copilot';
 import { retrieveGroundingData } from './lib/actions/retrieve-grounding-data';
 import { copilotInteractionWebhook } from './lib/triggers/copilot-interaction-webhook';
 import { createCustomApiCallAction } from '@activepieces/pieces-common';
@@ -16,6 +17,7 @@ export const microsoft365Copilot = createPiece({
   authors: ['sanket-a11y'],
   actions: [
     chatWithCopilot,
+    searchWithCopilot,
     retrieveGroundingData,
     createCustomApiCallAction({
       baseUrl: () => 'https://graph.microsoft.com/v1.0/',
